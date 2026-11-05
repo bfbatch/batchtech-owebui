@@ -941,8 +941,8 @@
 									<span
 										class="inline-block w-[0.125rem] h-3.5 bg-gray-400 dark:bg-gray-500 ml-0.5 animate-cursor-pulse align-text-bottom"
 									></span>
-									{#if !hasResponseContent && !hasVisibleStatus}
-										<!-- BATCHTECH: show rotating words while waiting for the first output -->
+									{#if !(message.content ?? '').trim() && !hasVisibleStatus}
+										<!-- BATCHTECH: show rotating words until reply text starts (also between tool calls) -->
 										<span class="ml-1.5 text-gray-500 shimmer"><ThinkingLabel /></span>
 									{/if}
 								</div>
