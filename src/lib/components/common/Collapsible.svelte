@@ -82,14 +82,14 @@
 		return custom.length > 0 ? custom : DEFAULT_THINKING_WORDS;
 	})();
 
-	let thinkingIndex = 0;
+	let thinkingIndex = Math.floor(Math.random() * 1000);
 	let thinkingTimer: ReturnType<typeof setInterval> | null = null;
 
 	$: isThinking = attributes?.type === 'reasoning' && attributes?.done !== 'true' && !messageDone;
 
 	$: if (isThinking && thinkingWords.length > 1) {
 		if (!thinkingTimer) {
-			thinkingTimer = setInterval(() => (thinkingIndex += 1), 2500);
+			thinkingTimer = setInterval(() => (thinkingIndex += 1), 2000);
 		}
 	} else if (thinkingTimer) {
 		clearInterval(thinkingTimer);
