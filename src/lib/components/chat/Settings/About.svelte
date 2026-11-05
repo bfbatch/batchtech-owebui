@@ -71,7 +71,18 @@
 							? 'items-center'
 							: ''} gap-1"
 					>
-						<BuildVersion />
+						<!-- BATCHTECH: BatchTechUI's own version first, with the Open WebUI version it is based on -->
+						{#if $config?.batchtech_version}
+							<span>
+								{$WEBUI_NAME} v{$config.batchtech_version}
+								<span class="text-gray-400 dark:text-gray-500">
+									({$i18n.t('based on Open WebUI')}
+								</span>
+							</span>
+						{/if}
+						<BuildVersion />{#if $config?.batchtech_version}<span
+								class="text-gray-400 dark:text-gray-500">)</span
+							>{/if}
 
 						{#if WEBUI_BUILD_CHANNEL === 'main' && $config?.features?.enable_version_update_check}
 							{#if version.latest === null}

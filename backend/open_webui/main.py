@@ -73,6 +73,7 @@ from open_webui.config import (
     seed_registered_defaults,
 )
 from open_webui.constants import ERROR_MESSAGES, TASKS
+from open_webui.batchtech_version import BATCHTECH_VERSION  # BATCHTECH
 from open_webui.env import (
     AIOHTTP_CLIENT_SESSION_SSL,
     AUDIT_EXCLUDED_PATHS,
@@ -2375,6 +2376,7 @@ async def get_app_config(request: Request):
         'status': True,
         'name': app.state.WEBUI_NAME,
         'version': VERSION,
+        'batchtech_version': BATCHTECH_VERSION,  # BATCHTECH
         'default_locale': str(DEFAULT_LOCALE),
         'i18n': config.get('ui.i18n') or {},
         'oauth': {
@@ -2675,6 +2677,7 @@ async def delete_event_webhook_api(request: Request, webhook_id: str, user=Depen
 async def get_app_version():
     return {
         'version': VERSION,
+        'batchtech_version': BATCHTECH_VERSION,  # BATCHTECH
         'deployment_id': DEPLOYMENT_ID,
     }
 
