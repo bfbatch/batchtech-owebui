@@ -70,6 +70,7 @@
 	import { fade } from 'svelte/transition';
 	import { flyAndScale } from '$lib/utils/transitions';
 	import RegenerateMenu from './ResponseMessage/RegenerateMenu.svelte';
+	import ThinkingLabel from '$lib/components/batchtech/ThinkingLabel.svelte';
 	import StatusHistory from './ResponseMessage/StatusHistory.svelte';
 	import FullHeightIframe from '$lib/components/common/FullHeightIframe.svelte';
 	import MCPApp from '$lib/components/chat/Messages/MCPApp.svelte';
@@ -940,6 +941,10 @@
 									<span
 										class="inline-block w-[0.125rem] h-3.5 bg-gray-400 dark:bg-gray-500 ml-0.5 animate-cursor-pulse align-text-bottom"
 									></span>
+									{#if !hasResponseContent && !hasVisibleStatus}
+										<!-- BATCHTECH: show rotating words while waiting for the first output -->
+										<span class="ml-1.5 text-gray-500 shimmer"><ThinkingLabel /></span>
+									{/if}
 								</div>
 							{/if}
 
