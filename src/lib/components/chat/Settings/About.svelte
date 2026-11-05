@@ -9,7 +9,7 @@
 	import { compareVersion } from '$lib/utils';
 	import { onMount, getContext } from 'svelte';
 
-	import BuildVersion from '$lib/components/common/BuildVersion.svelte';
+	import BatchTechVersion from '$lib/components/common/BatchTechVersion.svelte';
 	import UserSettingRow from './UserSettingRow.svelte';
 	import UserSettingSection from './UserSettingSection.svelte';
 
@@ -71,18 +71,7 @@
 							? 'items-center'
 							: ''} gap-1"
 					>
-						<!-- BATCHTECH: BatchTechUI's own version first, with the Open WebUI version it is based on -->
-						{#if $config?.batchtech_version}
-							<span>
-								{$WEBUI_NAME} v{$config.batchtech_version}
-								<span class="text-gray-400 dark:text-gray-500">
-									({$i18n.t('based on Open WebUI')}
-								</span>
-							</span>
-						{/if}
-						<BuildVersion />{#if $config?.batchtech_version}<span
-								class="text-gray-400 dark:text-gray-500">)</span
-							>{/if}
+						<BatchTechVersion />
 
 						{#if WEBUI_BUILD_CHANNEL === 'main' && $config?.features?.enable_version_update_check}
 							{#if version.latest === null}
@@ -105,16 +94,15 @@
 						{/if}
 					</div>
 
-					<button
+					<a
 						class="self-start {($settings?.highContrastMode ?? false)
 							? 'inline-flex min-h-6 items-center'
 							: ''} {actionButtonClass}"
-						on:click={() => {
-							showChangelog.set(true);
-						}}
+						href="https://github.com/bfbatch/batchtech-owebui/releases"
+						target="_blank"
 					>
 						<div>{$i18n.t('settings.personal.about.seeWhatSNew.label')}</div>
-					</button>
+					</a>
 				</div>
 
 				{#if WEBUI_BUILD_CHANNEL === 'main' && $config?.features?.enable_version_update_check}

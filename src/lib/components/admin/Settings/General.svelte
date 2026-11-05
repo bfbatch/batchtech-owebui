@@ -9,7 +9,7 @@
 	import SettingsSelect from '$lib/components/common/SettingsSelect.svelte';
 	import LanguageModeSelect from '$lib/components/common/LanguageModeSelect.svelte';
 	import Switch from '$lib/components/common/Switch.svelte';
-	import BuildVersion from '$lib/components/common/BuildVersion.svelte';
+	import BatchTechVersion from '$lib/components/common/BatchTechVersion.svelte';
 	import { WEBUI_BUILD_CHANNEL, WEBUI_VERSION } from '$lib/constants';
 	import { banners as _banners, config, showChangelog } from '$lib/stores';
 	import type { Banner } from '$lib/types';
@@ -144,7 +144,7 @@
 							{$i18n.t('settings.admin.general.version.label')}
 						</div>
 						<div class="mt-1 flex flex-wrap gap-x-1 text-gray-700 dark:text-gray-200">
-							<BuildVersion />
+							<BatchTechVersion />
 
 							{#if WEBUI_BUILD_CHANNEL === 'main' && $config?.features?.enable_version_update_check}
 								{#if version.latest === null}
@@ -167,15 +167,13 @@
 							{/if}
 						</div>
 
-						<button
-							class="mt-0.5 text-xs text-gray-400 transition-colors hover:text-gray-700 dark:text-gray-600 dark:hover:text-gray-300"
-							type="button"
-							on:click={() => {
-								showChangelog.set(true);
-							}}
+						<a
+							class="mt-0.5 inline-block text-xs text-gray-400 transition-colors hover:text-gray-700 dark:text-gray-600 dark:hover:text-gray-300"
+							href="https://github.com/bfbatch/batchtech-owebui/releases"
+							target="_blank"
 						>
 							{$i18n.t('settings.admin.general.seeWhatSNew.label')}
-						</button>
+						</a>
 					</div>
 
 					{#if WEBUI_BUILD_CHANNEL === 'main' && $config?.features?.enable_version_update_check}
