@@ -74,7 +74,6 @@
 		'Wrangling'
 	];
 
-
 	$: thinkingWords = (() => {
 		const custom = ($settings?.thinkingWords ?? '')
 			.split(/[\n,]/)
@@ -86,8 +85,7 @@
 	let thinkingIndex = 0;
 	let thinkingTimer: ReturnType<typeof setInterval> | null = null;
 
-	$: isThinking =
-		attributes?.type === 'reasoning' && attributes?.done !== 'true' && !messageDone;
+	$: isThinking = attributes?.type === 'reasoning' && attributes?.done !== 'true' && !messageDone;
 
 	$: if (isThinking && thinkingWords.length > 1) {
 		if (!thinkingTimer) {
