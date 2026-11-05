@@ -2,8 +2,8 @@
 	import { decode } from 'html-entities';
 	import { v4 as uuidv4 } from 'uuid';
 
-	import { getContext, onDestroy } from 'svelte';
-	import { settings } from '$lib/stores';
+	import { getContext } from 'svelte';
+	import ThinkingLabel from '$lib/components/batchtech/ThinkingLabel.svelte';
 	const i18n = getContext<typeof import('$lib/i18n').default>('i18n');
 
 	import dayjs from '$lib/dayjs';
@@ -51,56 +51,6 @@
 	};
 
 	const collapsibleId = uuidv4();
-
-	// BATCHTECH: rotate the "Thinking..." label through a user-configurable word list.
-	const DEFAULT_THINKING_WORDS = [
-		'Thinking',
-		'Pondering',
-		'Cogitating',
-		'Percolating',
-		'Noodling',
-		'Simmering',
-		'Ruminating',
-		'Musing',
-		'Contemplating',
-		'Mulling',
-		'Brewing',
-		'Churning',
-		'Deliberating',
-		'Spelunking',
-		'Marinating',
-		'Synthesizing',
-		'Cerebrating',
-		'Wrangling'
-	];
-
-	$: thinkingWords = (() => {
-		const custom = ($settings?.thinkingWords ?? '')
-			.split(/[\n,]/)
-			.map((w) => w.trim())
-			.filter(Boolean);
-		return custom.length > 0 ? custom : DEFAULT_THINKING_WORDS;
-	})();
-
-	let thinkingIndex = Math.floor(Math.random() * 1000);
-	let thinkingTimer: ReturnType<typeof setInterval> | null = null;
-
-	$: isThinking = attributes?.type === 'reasoning' && attributes?.done !== 'true' && !messageDone;
-
-	$: if (isThinking && thinkingWords.length > 1) {
-		if (!thinkingTimer) {
-			thinkingTimer = setInterval(() => (thinkingIndex += 1), 2000);
-		}
-	} else if (thinkingTimer) {
-		clearInterval(thinkingTimer);
-		thinkingTimer = null;
-	}
-
-	onDestroy(() => {
-		if (thinkingTimer) clearInterval(thinkingTimer);
-	});
-
-	$: thinkingLabel = `${thinkingWords[thinkingIndex % thinkingWords.length]}...`;
 </script>
 
 <div {id} class={className}>
@@ -146,7 +96,7 @@
 						{:else if attributes?.done === 'true' || messageDone}
 							{$i18n.t('Thought')}
 						{:else}
-							{thinkingLabel}
+							<ThinkingLabel />
 						{/if}
 					{:else if attributes?.type === 'code_interpreter'}
 						{#if attributes?.done === 'true' || messageDone}

@@ -70,6 +70,7 @@
 	import { fade } from 'svelte/transition';
 	import { flyAndScale } from '$lib/utils/transitions';
 	import RegenerateMenu from './ResponseMessage/RegenerateMenu.svelte';
+	import ThinkingLabel from '$lib/components/batchtech/ThinkingLabel.svelte';
 	import StatusHistory from './ResponseMessage/StatusHistory.svelte';
 	import FullHeightIframe from '$lib/components/common/FullHeightIframe.svelte';
 	import MCPApp from '$lib/components/chat/Messages/MCPApp.svelte';
@@ -207,6 +208,11 @@
 		!(statusEntries.at(-1)?.hidden ?? false);
 	$: visibleResponseContent =
 		getOutputText(message.output) || removeAllDetails(message.content ?? '');
+	// BATCHTECH: no thinking words while an ask_user question is waiting for the person's answer
+	$: awaitingAskUser = (message.output ?? []).some(
+		(item) =>
+			item?.type === 'function_call' && item?.name === 'ask_user' && item?.status === 'pending'
+	);
 	$: hasResponseContent = Boolean((message.content ?? '').trim() || message.output?.length);
 
 	let edit = false;
@@ -940,6 +946,10 @@
 									<span
 										class="inline-block w-[0.125rem] h-3.5 bg-gray-400 dark:bg-gray-500 ml-0.5 animate-cursor-pulse align-text-bottom"
 									></span>
+									{#if !(message.content ?? '').trim() && !hasVisibleStatus && !awaitingAskUser}
+										<!-- BATCHTECH: show rotating words until reply text starts (also between tool calls) -->
+										<span class="ml-1.5 text-gray-500 shimmer"><ThinkingLabel /></span>
+									{/if}
 								</div>
 							{/if}
 
