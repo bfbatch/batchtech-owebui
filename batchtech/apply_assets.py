@@ -66,7 +66,9 @@ def main():
         save(img, out / 'web-app-manifest-192x192.png', 192)
         save(img, out / 'apple-touch-icon.png', 180)
         save(img, out / 'favicon-96x96.png', 96)
-        square(img, 256).save(out / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+        square(img, 256).save(
+            out / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
+        )
         buf = io.BytesIO()
         square(img, 256).save(buf, 'PNG')
         b64 = base64.b64encode(buf.getvalue()).decode()
@@ -85,7 +87,11 @@ def main():
         save(img, out / 'favicon.png', 512)
         save(img, root / 'static/favicon.png', 512)
 
-    print('assets written' + (' (custom main logo)' if a.main_logo else '') + (' (custom model logo)' if a.model_logo else ''))
+    print(
+        'assets written'
+        + (' (custom main logo)' if a.main_logo else '')
+        + (' (custom model logo)' if a.model_logo else '')
+    )
 
 
 if __name__ == '__main__':
