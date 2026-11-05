@@ -94,15 +94,16 @@
 						{/if}
 					</div>
 
-					<a
+					<button
 						class="self-start {($settings?.highContrastMode ?? false)
 							? 'inline-flex min-h-6 items-center'
 							: ''} {actionButtonClass}"
-						href="https://github.com/bfbatch/batchtech-owebui/releases"
-						target="_blank"
+						on:click={() => {
+							showChangelog.set(true);
+						}}
 					>
 						<div>{$i18n.t('settings.personal.about.seeWhatSNew.label')}</div>
-					</a>
+					</button>
 				</div>
 
 				{#if WEBUI_BUILD_CHANNEL === 'main' && $config?.features?.enable_version_update_check}

@@ -393,7 +393,7 @@
 		setupKeyboardShortcuts();
 
 		if ($user?.role === 'admin' && ($settings?.showChangelog ?? true)) {
-			showChangelog.set($settings?.version !== $config.version);
+			showChangelog.set($settings?.version !== ($config.batchtech_version ?? $config.version));
 		}
 
 		if ($user?.role === 'admin' || ($user?.permissions?.chat?.temporary ?? true)) {

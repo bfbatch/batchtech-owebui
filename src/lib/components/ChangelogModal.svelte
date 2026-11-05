@@ -39,9 +39,11 @@
 	};
 
 	const closeModal = async () => {
-		localStorage.version = $config.version;
-		await settings.set({ ...$settings, ...{ version: $config.version } });
-		await updateUserSettings(localStorage.token, { ui: { version: $config.version } });
+		// BATCHTECH: remember the BatchTechUI version, so the popup shows again on the next BatchTechUI release
+		const seen = $config.batchtech_version ?? $config.version;
+		localStorage.version = seen;
+		await settings.set({ ...$settings, ...{ version: seen } });
+		await updateUserSettings(localStorage.token, { ui: { version: seen } });
 		show = false;
 	};
 
@@ -104,7 +106,7 @@
 				<div class="mt-1 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
 					<span>{$i18n.t('Release Notes')}</span>
 					<span class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></span>
-					<span>v{WEBUI_VERSION}</span>
+					<span>v{$config?.batchtech_version ?? WEBUI_VERSION}</span>
 				</div>
 			</div>
 

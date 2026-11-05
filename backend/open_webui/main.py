@@ -73,7 +73,7 @@ from open_webui.config import (
     seed_registered_defaults,
 )
 from open_webui.constants import ERROR_MESSAGES, TASKS
-from open_webui.batchtech_version import BATCHTECH_VERSION  # BATCHTECH
+from open_webui.batchtech_version import BATCHTECH_CHANGELOG, BATCHTECH_VERSION  # BATCHTECH
 from open_webui.env import (
     AIOHTTP_CLIENT_SESSION_SSL,
     AUDIT_EXCLUDED_PATHS,
@@ -2706,6 +2706,9 @@ async def get_app_latest_release_version(user=Depends(get_verified_user)):
 
 @app.get('/api/changelog')
 async def get_app_changelog():
+    # BATCHTECH: show BatchTechUI's own release notes; fall back to upstream's if the file is missing
+    if BATCHTECH_CHANGELOG:
+        return {key: BATCHTECH_CHANGELOG[key] for idx, key in enumerate(BATCHTECH_CHANGELOG) if idx < 5}
     return {key: CHANGELOG[key] for idx, key in enumerate(CHANGELOG) if idx < 5}
 
 
