@@ -982,7 +982,7 @@
 	<div>
 		<div class={settingRowClass}>
 			<label id="thinking-words-label" class={settingLabelClass} for="thinking-words-input">
-				{$i18n.t('Thinking words')}
+				{$i18n.t('settings.personal.interface.thinkingWords.label')}
 			</label>
 		</div>
 		<div class="mt-1.5 flex items-center pb-1">
@@ -996,9 +996,7 @@
 			/>
 		</div>
 		<p class={settingDescriptionClass}>
-			{$i18n.t(
-				'Words that rotate in place of "Thinking..." while the model reasons. Separate with commas. Leave empty for the defaults.'
-			)}
+			{$i18n.t('settings.personal.interface.thinkingWords.description')}
 		</p>
 	</div>
 
