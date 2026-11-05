@@ -25,6 +25,7 @@ def keep(line):
         'Help us translate',
         'sponsorship',
         'free to use as-is',
+        'based on Open WebUI',  # Settings > About: BatchTechUI version names the upstream it is based on
     ]
     return any(s in line for s in skip)
 
