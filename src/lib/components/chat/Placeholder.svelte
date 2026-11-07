@@ -154,7 +154,16 @@
 				/>
 			{:else}
 				<!-- BATCHTECH: claude.ai-style greeting instead of the model avatar and name -->
-				<div class="w-fit px-5 max-w-xl" in:fade={{ duration: 100 }}>
+				<div
+					class="w-fit px-5 max-w-xl flex items-center justify-center gap-3"
+					in:fade={{ duration: 100 }}
+				>
+					<img
+						src="{WEBUI_BASE_URL}/static/logo.png"
+						alt="BatchTechUI"
+						class="size-9 @sm:size-11 shrink-0 object-contain"
+						draggable="false"
+					/>
 					<h2 class="font-serif text-3xl @sm:text-4xl text-center text-gray-800 dark:text-gray-100">
 						{greetingFor($user?.name, $appMode)}
 					</h2>
