@@ -2,6 +2,12 @@
 
 Changes made in BatchTechUI itself. Open WebUI's own release notes are at https://github.com/open-webui/open-webui/releases.
 
+## [1.1.0] - 2026-11-07
+
+### Added
+
+- 🪙 **Token Saver filter.** Installed and on for every model the first time the server starts. It asks for terse replies, resends only the last 20 messages and shrinks old long messages and tool output, which cuts cloud model spend. Tune or turn it off in Admin Panel > Functions > Token Saver (gear icon).
+
 ## [1.0.0] - 2026-11-05
 
 ### Added

@@ -423,6 +423,10 @@ async def lifespan(app: FastAPI):
     if SAFE_MODE:
         await Functions.deactivate_all_functions()
 
+    from open_webui.utils.batchtech_defaults import install_batchtech_functions  # BATCHTECH
+
+    await install_batchtech_functions()  # BATCHTECH
+
     # This should be blocking (sync) so functions are not deactivated on first /get_models calls
     # when the first user lands on the / route.
     log.info('Installing external dependencies of functions and tools...')
