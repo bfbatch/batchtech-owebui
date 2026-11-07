@@ -154,7 +154,10 @@
 				/>
 			{:else}
 				<!-- BATCHTECH: claude.ai-style greeting instead of the model avatar and name -->
-				<div class="w-fit px-5 max-w-xl flex items-center justify-center gap-3" in:fade={{ duration: 100 }}>
+				<div
+					class="w-fit px-5 max-w-xl flex items-center justify-center gap-3"
+					in:fade={{ duration: 100 }}
+				>
 					<img
 						src="{WEBUI_BASE_URL}/static/logo.png"
 						alt="BatchTechUI"
