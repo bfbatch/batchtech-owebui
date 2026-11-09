@@ -536,7 +536,7 @@
 			$config?.features?.enable_channels &&
 			($user?.role === 'admin' || ($user?.permissions?.features?.channels ?? true))
 		) {
-			await initChannels();
+			initChannels();
 		}
 
 		await initChatList();
