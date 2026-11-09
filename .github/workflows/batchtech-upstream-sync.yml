@@ -53,8 +53,15 @@ jobs:
             # script and i18n:parse put our changes back.
             git diff --name-only --diff-filter=U | grep '^src/lib/i18n/locales/' | xargs -r git checkout --theirs --
             git diff --name-only --diff-filter=U | grep '^src/lib/i18n/locales/' | xargs -r git add
-            git diff --name-only --diff-filter=U > conflicts.txt
-            [ -s conflicts.txt ] && result=conflict
+            # Any other file where our only change is the rename to BatchTechUI: take upstream's, rebrand puts it back.
+            base=$(git merge-base origin/main "upstream-$TAG")
+            for f in $(git diff --name-only --diff-filter=U); do
+              if ! git diff "$base" origin/main -- "$f" | grep '^+[^+]' | grep -v 'BatchTechUI' | grep -q .; then
+                git checkout --theirs -- "$f" && git add "$f"
+              fi
+            done
+            git diff --name-only --diff-filter=U > "$RUNNER_TEMP/conflicts.txt"
+            [ -s "$RUNNER_TEMP/conflicts.txt" ] && result=conflict
           fi
           # Keep our own workflows: upstream's would run on the fork, and the Actions token cannot push workflow edits.
           git rm -rf -q --ignore-unmatch .github/workflows
@@ -103,7 +110,7 @@ jobs:
           status="Merged cleanly, rebrand re-applied, frontend build passes."
           if [ "$RESULT" = conflict ]; then
             title="Merge Open WebUI $TAG (needs a person)"
-            status="Conflicts the script could not resolve. The files with markers:"$'\n\n'"$(sed 's/^/- /' conflicts.txt)"
+            status="Conflicts the script could not resolve. The files with markers:"$'\n\n'"$(sed 's/^/- /' "$RUNNER_TEMP/conflicts.txt")"
           elif [ "$BUILD" = failure ]; then
             title="Merge Open WebUI $TAG (build fails)"
             status="Merged cleanly but the frontend build fails. See this workflow run."
