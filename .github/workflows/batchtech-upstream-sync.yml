@@ -1,5 +1,11 @@
-# BATCHTECH: weekly check for a new Open WebUI release. Merges it, re-applies the rebrand, builds, and opens a PR
-# (or an issue if the merge conflicts or the build fails). Nothing is deployed automatically.
+# BATCHTECH: weekly check for a new Open WebUI release. Merges it into branch sync/<tag>, re-applies the rebrand,
+# builds, and opens a draft PR. Nothing is deployed automatically.
+#
+# It never needs GitHub Issues. If the merge has conflicts the translation files cannot fix on their own, the branch
+# is pushed with the conflict markers in place and the PR is titled "needs a person".
+#
+# One-time repo setting: Settings > Actions > General > Workflow permissions: "Read and write permissions" AND
+# tick "Allow GitHub Actions to create and approve pull requests". Without it the PR step prints a link instead.
 name: BatchTechUI upstream sync
 
 on:
@@ -10,7 +16,6 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  issues: write
 
 jobs:
   sync:
@@ -28,15 +33,12 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           git remote add upstream https://github.com/open-webui/open-webui.git
           git fetch --no-tags upstream "refs/tags/$tag:refs/tags/upstream-$tag"
-          if git merge-base --is-ancestor "upstream-$tag" origin/main; then
-            echo "new=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "new=true" >> "$GITHUB_OUTPUT"
-          fi
-          if [ -n "$(gh pr list --head "sync/$tag" --state all --json number --jq '.[0].number')" ]; then
-            echo "new=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Merge, rebrand, build
+          new=true
+          if git merge-base --is-ancestor "upstream-$tag" origin/main; then new=false; fi
+          if [ -n "$(gh pr list --head "sync/$tag" --state all --json number --jq '.[0].number')" ]; then new=false; fi
+          echo "new=$new" >> "$GITHUB_OUTPUT"
+          [ "$new" = true ] || echo "Nothing to do for $tag (already merged, or a sync PR exists)." >> "$GITHUB_STEP_SUMMARY"
+      - name: Merge and re-apply the rebrand
         if: steps.up.outputs.new == 'true'
         id: merge
         env:
@@ -45,27 +47,35 @@ jobs:
           git config user.name "batchtech-sync"
           git config user.email "batchtech-sync@users.noreply.github.com"
           git checkout -b "sync/$TAG" origin/main
+          result=merged
           if ! git merge --no-commit --no-ff "upstream-$TAG"; then
+            # Translation files conflict every time (we rename keys in them). Take upstream's; the rebrand
+            # script and i18n:parse put our changes back.
+            git diff --name-only --diff-filter=U | grep '^src/lib/i18n/locales/' | xargs -r git checkout --theirs --
+            git diff --name-only --diff-filter=U | grep '^src/lib/i18n/locales/' | xargs -r git add
             git diff --name-only --diff-filter=U > conflicts.txt
-            git merge --abort
-            echo "result=conflict" >> "$GITHUB_OUTPUT"
-            exit 0
+            [ -s conflicts.txt ] && result=conflict
           fi
           # Keep our own workflows: upstream's would run on the fork, and the Actions token cannot push workflow edits.
           git rm -rf -q --ignore-unmatch .github/workflows
           git checkout origin/main -- .github/workflows
-          git commit -q -m "Merge Open WebUI $TAG (upstream workflows skipped)"
-          pip install -q pillow
-          python3 batchtech/rebrand.py
-          python3 batchtech/apply_assets.py
-          git add -A && git diff --cached --quiet || git commit -m "Re-apply BatchTechUI rebrand after merging $TAG"
-          git diff "origin/main" "upstream-$TAG" --stat -- LICENSE > license-diff.txt || true
-          echo "result=merged" >> "$GITHUB_OUTPUT"
+          if [ "$result" = conflict ]; then
+            # Commit the files with their conflict markers so a person can finish the merge on this branch.
+            git add -A
+            git commit -q -m "Merge Open WebUI $TAG (conflicts left in place, needs a person)"
+          else
+            pip install -q pillow
+            python3 batchtech/rebrand.py
+            python3 batchtech/apply_assets.py
+            git add -A
+            git commit -q -m "Merge Open WebUI $TAG (upstream workflows skipped, rebrand re-applied)"
+          fi
+          echo "result=$result" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         if: steps.merge.outputs.result == 'merged'
         with:
           node-version: 22
-      - name: Build frontend (also re-sorts translations so upstream's format check passes)
+      - name: Build frontend (also re-sorts translations so the format check passes)
         if: steps.merge.outputs.result == 'merged'
         id: build
         continue-on-error: true
@@ -79,23 +89,35 @@ jobs:
       - name: Commit re-sorted translations
         if: steps.merge.outputs.result == 'merged'
         run: git add -A && (git diff --cached --quiet || git commit -m "Re-sort translations (i18n:parse)")
-      - name: Open PR or issue
+      - name: Push the branch and open a draft PR
         if: steps.up.outputs.new == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.up.outputs.tag }}
+          RESULT: ${{ steps.merge.outputs.result }}
+          BUILD: ${{ steps.build.outcome }}
         run: |
+          git push origin "sync/$TAG"
           notes="https://github.com/open-webui/open-webui/releases/tag/$TAG"
-          if [ "${{ steps.merge.outputs.result }}" = "conflict" ]; then
-            gh issue create --title "Upstream $TAG conflicts with BatchTechUI" \
-              --body "Merging $TAG into main conflicts in:"$'\n\n'"$(sed 's/^/- /' conflicts.txt)"$'\n\n'"Release notes: $notes"
-          elif [ "${{ steps.build.outcome }}" = "failure" ]; then
-            git push origin "sync/$TAG"
-            gh issue create --title "Upstream $TAG merged but the build fails" \
-              --body "Branch sync/$TAG merges cleanly but \`vite build\` fails. See the latest run of this workflow. Release notes: $notes"
-          else
-            git push origin "sync/$TAG"
-            lic=""; [ -s license-diff.txt ] && lic=$'\n\n**LICENSE changed upstream. Re-read the branding clause before merging.**'
-            gh pr create --draft --base main --head "sync/$TAG" --title "Merge Open WebUI $TAG" \
-              --body "Automatic merge of upstream $TAG, rebrand re-applied, frontend build passes. Release notes: $notes$lic"$'\n\nBack up before deploying; deploys stay manual.'
+          title="Merge Open WebUI $TAG"
+          status="Merged cleanly, rebrand re-applied, frontend build passes."
+          if [ "$RESULT" = conflict ]; then
+            title="Merge Open WebUI $TAG (needs a person)"
+            status="Conflicts the script could not resolve. The files with markers:"$'\n\n'"$(sed 's/^/- /' conflicts.txt)"
+          elif [ "$BUILD" = failure ]; then
+            title="Merge Open WebUI $TAG (build fails)"
+            status="Merged cleanly but the frontend build fails. See this workflow run."
+          fi
+          body="$status"$'\n\n'"Release notes: $notes"$'\n\n'"Back up before deploying; deploys stay manual."
+          if ! gh pr create --draft --base main --head "sync/$TAG" --title "$title" --body "$body" 2> pr-error.txt; then
+            cat pr-error.txt
+            {
+              echo "## Branch sync/$TAG was pushed, but the PR could not be opened"
+              echo
+              echo "Open it by hand: https://github.com/${{ github.repository }}/compare/main...sync/$TAG?expand=1"
+              echo
+              echo "To let this job open PRs itself: repo Settings > Actions > General > Workflow permissions >"
+              echo "tick 'Allow GitHub Actions to create and approve pull requests'."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi
